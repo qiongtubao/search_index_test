@@ -1,0 +1,102 @@
+[package]
+name = "tantivy"
+version = "0.10.2"
+authors = ["Paul Masurel <paul.masurel@gmail.com>"]
+license = "MIT"
+categories = ["database-implementations", "data-structures"]
+description = """Search engine library"""
+documentation = "https://tantivy-search.github.io/tantivy/tantivy/index.html"
+homepage = "https://github.com/tantivy-search/tantivy"
+repository = "https://github.com/tantivy-search/tantivy"
+readme = "README.md"
+keywords = ["search", "information", "retrieval"]
+edition = "2018"
+
+[dependencies]
+base64 = "0.10.0"
+byteorder = "1.0"
+once_cell = "0.2"
+regex = "1.0"
+tantivy-fst = "0.1"
+memmap = {version = "0.7", optional=true}
+lz4 = {version="1.20", optional=true}
+snap = {version="0.2"}
+atomicwrites = {version="0.2.2", optional=true}
+tempfile = "3.0"
+log = "0.4"
+combine = ">=3.6.0,<4.0.0"
+tempdir = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+num_cpus = "1.2"
+fs2={version="0.4", optional=true}
+itertools = "0.8"
+levenshtein_automata = {version="0.1", features=["fst_automaton"]}
+notify = {version="4", optional=true}
+bit-set = "0.5"
+uuid = { version = "0.7.2", features = ["v4", "serde"] }
+crossbeam = "0.5"
+futures = "0.1"
+futures-cpupool = "0.1"
+owning_ref = "0.4"
+stable_deref_trait = "1.0.0"
+rust-stemmers = "1.1"
+downcast-rs = { version="1.0" }
+bitpacking = {version="0.8", default-features = false, features=["bitpacker4x"]}
+census = "0.2"
+fnv = "1.0.6"
+owned-read = "0.4"
+failure = "0.1"
+htmlescape = "0.3.1"
+fail = "0.3"
+scoped-pool = "1.0"
+murmurhash32 = "0.2"
+chrono = "0.4"
+smallvec = "0.6"
+
+[target.'cfg(windows)'.dependencies]
+winapi = "0.3"
+
+[dev-dependencies]
+rand = "0.7"
+maplit = "1"
+matches = "0.1.8"
+time = "0.1.42"
+
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+
+[profile.test]
+debug-assertions = true
+overflow-checks = true
+
+[features]
+default = ["mmap"]
+mmap = ["atomicwrites", "fs2", "memmap", "notify"]
+lz4-compression = ["lz4"]
+failpoints = ["fail/failpoints"]
+unstable = [] # useful for benches.
+wasm-bindgen = ["uuid/wasm-bindgen"]
+
+[badges]
+travis-ci = { repository = "tantivy-search/tantivy" }
+
+[dev-dependencies.fail]
+version = "0.3"
+features = ["failpoints"]
+
+
+# Following the "fail" crate best practises, we isolate
+# tests that define specific behavior in fail check points
+# in a different binary.
+#
+# We do that because, fail rely on a global definition of
+# failpoints behavior and hence, it is incompatible with
+# multithreading.
+[[test]]
+name = "failpoints"
+path = "tests/failpoints/mod.rs"
+required-features = ["fail/failpoints"]

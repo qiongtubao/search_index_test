@@ -1,0 +1,1 @@
+{"query":{"bool":{"filter":[{"term":{"status":{"value":"0","boost":1}}},{"term":{"timeUnit":{"value":20000,"boost":1}}},{"range":{"time":{"from":78356886,"to":78366880,"include_lower":true,"include_upper":true,"boost":1}}}],"adjust_pure_negative":true,"boost":1}}}
