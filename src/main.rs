@@ -52,32 +52,32 @@ fn read_dir(dir_name : &String) {
     let reader = index.reader().expect("reader");
     let query =
         std::fs::read_to_string("./query.json").expect("error parsing config from file");
-    let query = query_parser::parse(query, schema.clone());
-    let query = r#"{
-	"query": {
-		"bool": {
-			"filter": [{
-				"term": {
-					"status": {
-						"value": "0",
-						"boost": 1
-					}
-				}
-			}, {
-				"term": {
-					"timeUnit": {
-						"value": 20000,
-						"boost": 1
-					}
-				}
-			}],
-			"adjust_pure_negative": true,
-			"boost": 1
-		}
-	}
-}"#;
-    let query = query_parser::parse(query.to_string(), schema.clone());
-    let query = CatQuery::new(query, schema.get_field("time").expect("field time"), 78356886, 78366880, 100000);
+    let query = query_parser::parse(query, schema.clone(), 10000);
+//    let query = r#"{
+//	"query": {
+//		"bool": {
+//			"filter": [{
+//				"term": {
+//					"status": {
+//						"value": "0",
+//						"boost": 1
+//					}
+//				}
+//			}, {
+//				"term": {
+//					"timeUnit": {
+//						"value": 20000,
+//						"boost": 1
+//					}
+//				}
+//			}],
+//			"adjust_pure_negative": true,
+//			"boost": 1
+//		}
+//	}
+//}"#;
+//    let query = query_parser::parse(query.to_string(), schema.clone());
+//    let query = CatQuery::new(query, schema.get_field("time").expect("field time"), 78356886, 78366880, 100000);
     let searcher = reader.searcher();
     let time = std::time::SystemTime::now();
     let result = query_all(&searcher, &query, &schema, "time");

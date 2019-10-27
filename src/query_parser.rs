@@ -1,20 +1,32 @@
 use crate::query_builder::QueryBuilder;
 use serde_json::Value;
-use tantivy::query::{Occur, BooleanQuery};
+use tantivy::query::{Occur, BooleanQuery, Query};
 use tantivy::schema::Schema;
+use crate::query::CatQuery;
 
-pub fn parse(query: String, schema: Schema) -> BooleanQuery {
-    let builder = QueryBuilder::new(schema.clone(), Occur::Must);
-    if let Some(query) = serde_json::from_str(&query).ok() {
-        return builder.parse(&query).build()
+pub fn parse(query: String, schema: Schema, size: usize) -> Box<dyn Query> {
+    let builder = QueryBuilder::new(schema.clone(), Occur::Must, size);
+    let mut query = {
+        if let Some(query) = serde_json::from_str(&query).ok() {
+            builder.parse(&query).build()
+        } else {
+            builder.build()
+        }
+    };
+    match query.downcast_mut::<CatQuery>() {
+        Some(c) => {
+            c.set_limit(size);
+        }
+        _ => {}
     }
-    return builder.build()
+    query
 }
 impl QueryBuilder {
     pub fn parse(self, v: &Value) -> Self {
         if let Some(v) = v.get("query") {
             return self.parse(v)
         }
+
         if let Some(v) = v.get("bool") {
             if let Some(v) = v.get("filter") {
                 return self.down(Occur::Must).parse(v).up()
@@ -68,6 +80,7 @@ impl QueryBuilder {
                 })
             }
         }
+
         self
     }
 }

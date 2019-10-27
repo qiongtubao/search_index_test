@@ -30,6 +30,9 @@ impl CatQuery {
             limit
         }
     }
+    pub fn set_limit(&mut self, limit: usize) {
+        self.limit = limit;
+    }
 }
 
 impl Query for CatQuery {
@@ -94,14 +97,49 @@ impl DocSet for ArcVecDocSet {
 //
 //    return false;
 //}
+fn intersection_cache(left: &mut DocSet, right: &mut DocSet, cache: &mut BitSet) -> bool {
+    if !right.advance() {
+        return false;
+    }
+    let mut candidate = right.doc();
+
+    if cache.contains(candidate) {
+        return true;
+    }
+
+
+    loop {
+        match left.skip_next(candidate) {
+            SkipResult::Reached => {
+                return true;
+            }
+            SkipResult::OverStep => {
+                candidate = left.doc();
+                cache.insert(candidate);
+            }
+            SkipResult::End => {
+                return false;
+            }
+        }
+        match right.skip_next(candidate) {
+            SkipResult::Reached => {
+                return true;
+            }
+            SkipResult::OverStep => {
+                candidate = right.doc();
+            }
+            SkipResult::End => {
+                return false;
+            }
+        }
+    }
+
+}
 fn intersection(left: &mut DocSet, right: &mut DocSet) -> bool {
     if !left.advance() {
         return false;
     }
     let mut candidate = left.doc();
-    if right.doc() == candidate {
-        return true;
-    }
     loop {
         match right.skip_next(candidate) {
             SkipResult::Reached => {
@@ -227,6 +265,7 @@ impl CatWeight {
         scorer.for_each(&mut |doc, score| {
             btree_map.insert(doc, score);
         });
+        let mut k = 0;
         for i in self.left..self.right {
             let term = Term::from_field_u64(self.field, i);
             if let Some(mut right) = inverted_index.read_postings(&term, IndexRecordOption::Basic) {
@@ -234,6 +273,10 @@ impl CatWeight {
                     let doc_id = right.doc();
                     if btree_map.contains_key(&doc_id) {
                         doc_bitset.insert(doc_id);
+                        if k >= self.limit && self.limit != 0 {
+                            let doc_bitset = BitSetDocSet::from(doc_bitset);
+                            return Ok(Box::new(ConstScorer::new(doc_bitset)));
+                        }
                     }
 
                 }
@@ -246,29 +289,91 @@ impl CatWeight {
         let mut scorer = self.weight.scorer(reader)?;
         let inverted_index = reader.inverted_index(self.field);
         let max_doc = reader.max_doc();
+
         let mut doc_bitmap = BitSet::with_max_value(max_doc);
         while scorer.advance() {
             doc_bitmap.insert(scorer.doc());
         }
         let mut doc_bitset = BitSet::with_max_value(max_doc);
+        let mut k = 0;
         for i in self.left..self.right {
             let term = Term::from_field_u64(self.field, i);
             if let Some(mut right) = inverted_index.read_postings(&term, IndexRecordOption::Basic) {
                 while right.advance() {
                     if doc_bitmap.contains(right.doc()) {
-                       doc_bitset.insert(right.doc())
+                       doc_bitset.insert(right.doc());
+                        k= k + 1;
+                        if k >= self.limit && self.limit != 0{
+                            return Ok(Box::new(ConstScorer::new(BitSetDocSet::from(doc_bitset))));
+                        }
                     }
                 }
             }
         }
         Ok(Box::new(ConstScorer::new(BitSetDocSet::from(doc_bitset))))
     }
+    fn scorer6(&self, reader: &SegmentReader) ->  Result<Box<Scorer>, TantivyError> {
+        let inverted_index = reader.inverted_index(self.field);
+        let max_doc = reader.max_doc();
+        let mut doc_bitset = BitSet::with_max_value(max_doc);
+        for i in self.left..self.right {
+            let term = Term::from_field_u64(self.field, i);
+            if let Some(mut right) = inverted_index.read_postings(&term, IndexRecordOption::Basic) {
+                while right.advance() {
+                    doc_bitset.insert(right.doc());
+                }
+            }
+        }
+        let mut scorer = self.weight.scorer(reader)?;
+        let mut doc_map = BitSet::with_max_value(max_doc);
+        let mut right = BitSetDocSet::from(doc_bitset);
+        let mut k = 0;
+        while intersection(&mut scorer, &mut right) {
+            doc_map.insert(scorer.doc());
+            k = k + 1;
+            if self.limit > 0 && k >= self.limit {
+                return Ok(Box::new(ConstScorer::new( BitSetDocSet::from(doc_map))));
+            }
+        }
+        Ok(Box::new(ConstScorer::new( BitSetDocSet::from(doc_map))))
+    }
+    fn scorer7(&self, reader: &SegmentReader) ->  Result<Box<Scorer>, TantivyError> {
+        let inverted_index = reader.inverted_index(self.field);
+        let max_doc = reader.max_doc();
+        let mut doc_bitset = BitSet::with_max_value(max_doc);
+
+        let term_dict = inverted_index.terms();
+        let mut term_range = self.term_range(term_dict);
+        while term_range.advance() {
+            let term_info = term_range.value();
+            let mut block_segment_postings = inverted_index
+                .read_block_postings_from_terminfo(term_info, IndexRecordOption::Basic);
+            while block_segment_postings.advance() {
+                for &doc in block_segment_postings.docs() {
+                    doc_bitset.insert(doc);
+                }
+            }
+        }
+        let mut scorer = self.weight.scorer(reader)?;
+        let mut doc_map = BitSet::with_max_value(max_doc);
+        let mut right = BitSetDocSet::from(doc_bitset);
+        let mut k = 0;
+        while intersection(&mut scorer, &mut right) {
+            doc_map.insert(scorer.doc());
+            k = k + 1;
+            if self.limit > 0 && k >= self.limit {
+                return Ok(Box::new(ConstScorer::new( BitSetDocSet::from(doc_map))));
+            }
+        }
+        Ok(Box::new(ConstScorer::new(BitSetDocSet::from(doc_map))))
+    }
+
 }
 
 
 impl Weight for CatWeight {
     fn scorer(&self, reader: &SegmentReader) -> Result<Box<Scorer>, TantivyError> {
-        self.scorer2(reader)
+        self.scorer7(reader)
     }
 
 
