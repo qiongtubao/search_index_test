@@ -86,6 +86,10 @@ impl<TDocSet: DocSet> DocSet for ConstScorer<TDocSet> {
     fn append_to_bitset(&mut self, bitset: &mut BitSet) {
         self.docset.append_to_bitset(bitset);
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "ConstScorer<TDocSet> "
+    }
 }
 
 impl<TDocSet: DocSet + 'static> Scorer for ConstScorer<TDocSet> {

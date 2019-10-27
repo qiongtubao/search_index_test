@@ -114,6 +114,10 @@ where
     fn size_hint(&self) -> u32 {
         self.underlying_docset.size_hint()
     }
+
+    fn get_name(&mut self) -> &'static str {
+       "Exclude<TDocSet, TDocSetExclude>"
+    }
 }
 
 impl<TScorer, TDocSetExclude> Scorer for Exclude<TScorer, TDocSetExclude>

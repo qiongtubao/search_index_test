@@ -54,7 +54,7 @@ pub struct Intersection<TDocSet: DocSet, TOtherDocSet: DocSet = Box<dyn Scorer>>
 }
 
 impl<TDocSet: DocSet> Intersection<TDocSet, TDocSet> {
-    pub(crate) fn new(mut docsets: Vec<TDocSet>) -> Intersection<TDocSet, TDocSet> {
+    pub fn new(mut docsets: Vec<TDocSet>) -> Intersection<TDocSet, TDocSet> {
         let num_docsets = docsets.len();
         assert!(num_docsets >= 2);
         docsets.sort_by(|left, right| right.size_hint().cmp(&left.size_hint()));
@@ -92,6 +92,7 @@ impl<TDocSet: DocSet, TOtherDocSet: DocSet> Intersection<TDocSet, TOtherDocSet> 
 
 impl<TDocSet: DocSet, TOtherDocSet: DocSet> DocSet for Intersection<TDocSet, TOtherDocSet> {
     fn advance(&mut self) -> bool {
+//        println!("left: {:?}, right: {:?}", self.left.get_name(), self.right.get_name());
         let (left, right) = (&mut self.left, &mut self.right);
 
         if !left.advance() {
@@ -210,6 +211,10 @@ impl<TDocSet: DocSet, TOtherDocSet: DocSet> DocSet for Intersection<TDocSet, TOt
 
     fn size_hint(&self) -> u32 {
         self.left.size_hint()
+    }
+
+    fn get_name(&mut self) -> &'static str {
+        "Intersection<TDocSet, TOtherDocSet>"
     }
 }
 

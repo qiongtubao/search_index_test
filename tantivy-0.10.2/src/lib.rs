@@ -179,7 +179,7 @@ pub use crate::indexer::IndexWriter;
 pub use crate::postings::Postings;
 pub use crate::schema::{Document, Term};
 
-pub use crate::common::{i64_to_u64, u64_to_i64, f64_to_u64, u64_to_f64};
+pub use crate::common::{i64_to_u64, u64_to_i64, f64_to_u64, u64_to_f64, BitSet};
 
 /// Expose the current version of tantivy, as well
 /// whether it was compiled with the simd compression.

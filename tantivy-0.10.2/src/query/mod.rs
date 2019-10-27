@@ -24,14 +24,14 @@ mod term_query;
 mod union;
 mod weight;
 
-#[cfg(test)]
+//#[cfg(test)]
 mod vec_docset;
 
 pub(crate) mod score_combiner;
 pub use self::intersection::Intersection;
 pub use self::union::Union;
 
-#[cfg(test)]
+//#[cfg(test)]
 pub use self::vec_docset::VecDocSet;
 
 pub use self::all_query::{AllQuery, AllScorer, AllWeight};
@@ -55,6 +55,8 @@ pub use self::scorer::ConstScorer;
 pub use self::scorer::Scorer;
 pub use self::term_query::TermQuery;
 pub use self::weight::Weight;
+pub use self::boolean_query::BooleanWeight;
+pub use self::term_query::TermScorer;
 
 #[cfg(test)]
 mod tests {

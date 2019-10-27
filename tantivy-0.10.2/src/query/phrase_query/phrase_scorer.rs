@@ -39,6 +39,10 @@ impl<TPostings: Postings> DocSet for PostingsWithOffset<TPostings> {
     fn size_hint(&self) -> u32 {
         self.postings.size_hint()
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "PostingsWithOffset<TPostings>"
+    }
 }
 
 pub struct PhraseScorer<TPostings: Postings> {
@@ -245,6 +249,10 @@ impl<TPostings: Postings> DocSet for PhraseScorer<TPostings> {
 
     fn size_hint(&self) -> u32 {
         self.intersection_docset.size_hint()
+    }
+
+    fn get_name(&mut self) -> &'static str {
+        "hraseScorer<TPostings>"
     }
 }
 

@@ -37,6 +37,10 @@ impl DocSet for VecDocSet {
     fn size_hint(&self) -> u32 {
         self.len() as u32
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "VecDocSet"
+    }
 }
 
 impl HasLen for VecDocSet {

@@ -128,7 +128,7 @@ impl SegmentPostings {
 impl DocSet for SegmentPostings {
     // goes to the next element.
     // next needs to be called a first time to point to the correct element.
-    #[inline]
+//    #[inline]
     fn advance(&mut self) -> bool {
         if self.position_computer.is_some() && self.cur < COMPRESSION_BLOCK_SIZE {
             let term_freq = self.term_freq() as usize;
@@ -229,7 +229,7 @@ impl DocSet for SegmentPostings {
     /// # Panics
     ///
     /// Will panics if called without having called advance before.
-    #[inline]
+//    #[inline]
     fn doc(&self) -> DocId {
         let docs = self.block_cursor.docs();
         debug_assert!(
@@ -256,6 +256,10 @@ impl DocSet for SegmentPostings {
                 }
             }
         }
+    }
+
+    fn get_name(&mut self) -> &'static str {
+        return "SegmentPostings";
     }
 }
 

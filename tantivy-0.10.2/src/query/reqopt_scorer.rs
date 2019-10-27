@@ -60,6 +60,10 @@ where
     fn size_hint(&self) -> u32 {
         self.req_scorer.size_hint()
     }
+
+    fn get_name(&mut self) -> &'static str {
+       "RequiredOptionalScorer"
+    }
 }
 
 impl<TReqScorer, TOptScorer, TScoreCombiner> Scorer

@@ -59,6 +59,10 @@ impl DocSet for EmptyScorer {
     fn size_hint(&self) -> u32 {
         0
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "EmptyScorer"
+    }
 }
 
 impl Scorer for EmptyScorer {

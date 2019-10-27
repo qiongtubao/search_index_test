@@ -60,6 +60,10 @@ impl DocSet for TermScorer {
     fn size_hint(&self) -> u32 {
         self.postings.size_hint()
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "TermScorer"
+    }
 }
 
 impl Scorer for TermScorer {

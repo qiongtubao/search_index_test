@@ -81,6 +81,10 @@ impl DocSet for AllScorer {
     fn size_hint(&self) -> u32 {
         self.max_doc
     }
+
+    fn get_name(&mut self) -> &'static str {
+       "AllScorer"
+    }
 }
 
 impl Scorer for AllScorer {

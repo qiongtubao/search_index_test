@@ -250,6 +250,10 @@ where
     fn size_hint(&self) -> u32 {
         0u32
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "Union<TScorer, TScoreCombiner>"
+    }
 }
 
 impl<TScorer, TScoreCombiner> Scorer for Union<TScorer, TScoreCombiner>

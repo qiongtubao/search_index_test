@@ -581,6 +581,10 @@ pub mod tests {
         fn size_hint(&self) -> u32 {
             self.0.size_hint()
         }
+
+        fn get_name(&mut self) -> &'static str {
+            "UnoptimizedDocSet"
+        }
     }
 
     impl<TScorer: Scorer> Scorer for UnoptimizedDocSet<TScorer> {

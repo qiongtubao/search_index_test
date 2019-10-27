@@ -4,6 +4,7 @@ use crate::DocId;
 use std::borrow::Borrow;
 use std::borrow::BorrowMut;
 use std::cmp::Ordering;
+use std::ops::Deref;
 
 /// Expresses the outcome of a call to `DocSet`'s `.skip_next(...)`.
 #[derive(PartialEq, Eq, Debug)]
@@ -119,6 +120,7 @@ pub trait DocSet {
         }
         count
     }
+    fn get_name(&mut self) -> &'static str;
 }
 
 impl<TDocSet: DocSet + ?Sized> DocSet for Box<TDocSet> {
@@ -155,5 +157,10 @@ impl<TDocSet: DocSet + ?Sized> DocSet for Box<TDocSet> {
     fn append_to_bitset(&mut self, bitset: &mut BitSet) {
         let unboxed: &mut TDocSet = self.borrow_mut();
         unboxed.append_to_bitset(bitset);
+    }
+
+    fn get_name(&mut self) -> &'static str {
+        let unboxed: &mut TDocSet = self.borrow_mut();
+        unboxed.get_name()
     }
 }

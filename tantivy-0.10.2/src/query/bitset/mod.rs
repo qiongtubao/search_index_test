@@ -116,6 +116,10 @@ impl DocSet for BitSetDocSet {
     fn size_hint(&self) -> u32 {
         self.docs.len() as u32
     }
+
+    fn get_name(&mut self) -> &'static str {
+        "BitSetDocSet"
+    }
 }
 
 #[cfg(test)]
