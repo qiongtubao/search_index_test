@@ -1,0 +1,1 @@
+{"query":{"bool":{"filter":[{"term":{"status":{"value":"0","boost":1}}}],"adjust_pure_negative":true,"boost":1}}}
